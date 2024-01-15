@@ -24,7 +24,7 @@ trait ResponseTrait
 
   protected function errorResponse($data = null, $message = null, $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR)
   {
-    $response['success'] = true;
+    $response['success'] = false;
 
     ( $message !== null ) ?? $response['message'] = $message;
     ( $data !== null ) ?? $response['data'] = $data;
