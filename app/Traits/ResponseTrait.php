@@ -16,8 +16,8 @@ trait ResponseTrait
   {
     $response['success'] = true;
 
-    ( $message !== null ) ?? $response['message'] = $message;
-    ( $data !== null ) ?? $response['data'] = $data;
+    ( null !== $message ) ? $response['message'] = $message : '';
+    ( null !== $data ) ? $response['data'] = $data : '' ;
 
     return response()->json($response, $statusCode);
   }
@@ -26,8 +26,8 @@ trait ResponseTrait
   {
     $response['success'] = false;
 
-    ( $message !== null ) ?? $response['message'] = $message;
-    ( $data !== null ) ?? $response['data'] = $data;
+    ( null !== $message ) ? $response['message'] = $message : '';
+    ( null !== $data ) ? $response['data'] = $data : '' ;
 
     return response()->json($response, $statusCode);
   }
