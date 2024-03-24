@@ -34,4 +34,12 @@ class AuthController extends ApiController
         $success['token'] = $user->createToken('UserToken')->plainTextToken;
         return $this->successResponse($success, AuthConstants::LOGIN );
     }
+
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+        $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
+
+        return $this->successResponse( message: AuthConstants::LOGOUT );
+    }
 }
