@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Api\ApiController;
 use Illuminate\Http\Request;
 use App\Constants\AuthConstants;
+use Illuminate\Support\Facades\Password;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Http\Requests\Api\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Api\Auth\ResetPasswordRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -41,5 +44,50 @@ class AuthController extends ApiController
         $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
 
         return $this->successResponse( message: AuthConstants::LOGOUT );
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        $response = Password::sendResetLink( $request->only('email'));
+
+        switch($response){
+            case Password::RESET_THROTTLED:
+                return $this->errorResponse( message: AuthConstants::PASSWORD_RESET_LINK_TROTTLED, statusCode: 429);
+
+            case Password::RESET_LINK_SENT:
+                return $this->successResponse( message: AuthConstants::PASSWORD_RESET_LINK_SENT );
+
+            default:
+                return $this->errorResponse( message: AuthConstants::PASSWORD_RESET_LINK_FAILED);
+        }
+
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    { 
+        // The token is obtained from the forgot password email link.
+        $response = Password::reset(
+            $request->only('email','token','password','password_confirmation'),
+                function (User $user, string $password)
+                {
+                    $user->forceFill([
+                        'password' => Hash::make($password)
+                    ]);
+                    $user->save();
+
+                }
+        );
+
+        switch ($response) {
+            case Password::INVALID_TOKEN:
+                return $this->errorResponse( message: AuthConstants::PASSWORD_RESET_INVALID_TOKEN, statusCode: 400);
+
+            case Password::PASSWORD_RESET:
+                return $this->successResponse( message: AuthConstants::PASSWORD_RESET_SUCCESS);
+
+            default:
+                return $this->errorResponse( message: AuthConstants::PASSWORD_RESET_FAILED );
+        }
+
     }
 }
