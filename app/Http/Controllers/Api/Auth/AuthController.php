@@ -23,6 +23,8 @@ class AuthController extends ApiController
         $user = User::create($input);
         $success['token'] = $user->createToken('UserToken')->plainTextToken; // Created token by token_name = "UserToken"
 
+        $user->notify(new \App\Notifications\UserRegisteredNotification($user));
+
         return $this->successResponse( $success, AuthConstants::REGISTER);
     }
 
